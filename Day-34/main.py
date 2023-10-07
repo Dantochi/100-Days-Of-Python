@@ -12,7 +12,7 @@ for question in question_data:
 
 
 quiz = QuizBrain(question_bank)
-ui = QuizInterface()
+ui = QuizInterface(quiz)
 # ui.question.grid(column=0, row=1)
 
 # while quiz.still_has_questions():
