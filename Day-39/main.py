@@ -7,5 +7,6 @@ data = sheet_data.get_data
 for x in data:
     city_code = FlightSearch(x)
     x["iataCode"] = city_code.city_code()
+    sheet_update = sheet_data.city_code(x["id"], x["iataCode"])
 
-print(data)
+print(sheet_update)
