@@ -17,16 +17,24 @@ class DataManager:
         self.city_name = [value["city"] for value in self.get_data]
         self.put_response = requests.put(url="https://api.sheety.co/5ffbfe8544b47a25bfc91c1a72816097/flightDeals/prices/[Object ID]")
 
-    def city_code(self, id, code):
+    def update_city_code(self, id, code):
         sheet_parameters = {
             "price": {
-                "iataCode": "DELETE"
+                "iataCode": code
             }
         }
-
         sheet_endpoint = f"https://api.sheety.co/5ffbfe8544b47a25bfc91c1a72816097/flightDeals/prices/{id}"
-        sheet_put = requests.delete(url=sheet_endpoint, json=sheet_parameters)
-        return sheet_put.text
+        sheet_put = requests.put(url=sheet_endpoint, json=sheet_parameters)
+        # print(sheet_put.text)
+
+    def receive_price(self, id, price):
+        sheet_parameters = {
+            "price": {
+                "lowestprice": price
+            }
+        }
+        sheet_endpoint = f"https://api.sheety.co/5ffbfe8544b47a25bfc91c1a72816097/flightDeals/prices/{id}"
+        sheet_edit = requests.put(url=sheet_endpoint, json=sheet_parameters)
+        print(sheet_edit.text)
 
     #This class is responsible for talking to the Google Sheet.
-    pass
