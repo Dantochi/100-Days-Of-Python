@@ -20,7 +20,7 @@ print(current_day)
 with open(file="quotes.txt", mode='r') as quotes:
     bank = random.choice(quotes.readlines())
 
-if current_day == 5:
+if current_day == 3:
     email = "chiditochukwudaniel@gmail.com"
     password = "ulbeiqbhmkednqqp "
     with smtplib.SMTP("smtp.gmail.com") as connection:  # Location of email provider's smtp server
