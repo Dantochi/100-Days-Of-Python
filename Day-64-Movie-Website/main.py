@@ -21,6 +21,24 @@ pip3 install -r requirements.txt
 This will install the packages from requirements.txt for this project.
 '''
 
+# Making an API request
+import requests
+
+# query = input("What is the name of the Movie? \n").replace(' ', '%20')
+# print(query)
+# url = f"https://api.themoviedb.org/3/search/movie?query={query}&include_adult=false&language=en-US&page=1"
+headers = {
+    "accept": "application/json",
+    "Authorization": "xxxxxx"
+}
+
+
+# response = requests.get(url, headers=headers)
+# result = response.json()
+# data = result['results']
+# movies = []
+# print(movies)
+
 
 # CREATE DB
 class Base(DeclarativeBase):
@@ -31,7 +49,7 @@ db = SQLAlchemy(model_class=Base)
 # Create the app
 app = Flask(__name__)
 # Create the app
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'  # This is for the WTForms
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///movie.db"
 # initialize the app with the extension
 db.init_app(app)
@@ -92,8 +110,34 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    result = db.session.execute(db.select(Movie))
-    all_movies = result.scalars()
+    movie_id = request.args.get("id")
+    if movie_id:
+        # print(movie_id)
+        url = f"https://api.themoviedb.org/3/movie/{movie_id}?language=en-US"
+        headers = {
+            "accept": "application/json",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYjE2MmVkZjE0ODA5ZDU0NDU0OWU4Nzc2ZGY0NDM4YyIsInN1YiI6IjY1ZjJlMGRjNWE3ODg0MDE4NmQ4MjU4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.O1DU_qxR9F2Fn7q-M0I1C0e5P1O9FAwvXVO3ERf4AXc"
+        }
+
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        new_movie = Movie(
+            title=data["title"],
+            year=data["release_date"][:4],
+            description=data["overview"],
+            rating=0,
+            ranking="None",
+            review="None",
+            img_url=f"https://image.tmdb.org/t/p/w500/{data['poster_path']}"
+        )
+        db.session.add(new_movie)
+        db.session.commit()
+    result = db.session.execute(db.select(Movie).order_by(Movie.rating))
+    all_movies = result.scalars().all()  # This selects the table in the database using its name
+    for i in range(len(all_movies)):
+        all_movies[i].ranking = len(all_movies) - i
+    db.session.commit()
+    print(all_movies)
     return render_template("index.html", movies=all_movies)
 
 
@@ -119,9 +163,21 @@ def delete(user_id):
     return redirect(url_for('home'))
 
 
-@app.route("/add")
+@app.route("/add", methods=["GET", "POST"])
 def add():
     add_form = AddForm()
+    if add_form.validate_on_submit() and request.method == "POST":
+        query = add_form.movie_title.data.replace(' ', '%20')
+        # print(query)
+        url = f"https://api.themoviedb.org/3/search/movie?query={query}&include_adult=false&language=en-US&page=1"
+        HEADERS = {
+            "accept": "application/json",
+            "Authorization": "xxx"
+        }
+        response = requests.get(url, headers=HEADERS)
+        result = response.json()['results']
+        # movies = [f"{x['original_title']} - {x['release_date']}" for x in data]
+        return render_template('select.html', data=result)
     return render_template('add.html', form=add_form)
 
 
